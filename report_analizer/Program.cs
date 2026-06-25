@@ -70,7 +70,7 @@ namespace Analyzer
         static string[]? LoadFile(string path)
         {
             bool existed = File.Exists(path);
-            if (!existed) { return null;}
+            if (!existed) { return null; }
 
             else
             {
@@ -78,24 +78,24 @@ namespace Analyzer
                 return fileAsArray;
             }
         }
-   static int ProcessReports(
-            string[] fileAsArray,
-            string[] units,
-            Reports[] reports,
-            int[] priorities,
-            double[] scores,
-            Statuses[] statuses)
+        static int ProcessReports(
+                 string[] fileAsArray,
+                 string[] units,
+                 Reports[] reports,
+                 int[] priorities,
+                 double[] scores,
+                 Statuses[] statuses)
         {
             int currIndex = 0;
             foreach (string line in fileAsArray)
             {
-                 bool isValid = ProcessLine(
-                    line,
-                    out string unit,
-                    out Reports report,
-                    out int priority,
-                    out double score,
-                    out Statuses status);
+                bool isValid = ProcessLine(
+                   line,
+                   out string unit,
+                   out Reports report,
+                   out int priority,
+                   out double score,
+                   out Statuses status);
 
                 if (isValid)
                 {
@@ -139,17 +139,17 @@ namespace Analyzer
             if (fields.Length != 5) { return false; }
 
             unit = fields[0].Trim();
-            if (! HasAny(unit)){ return false; }
+            if (!HasAny(unit)) { return false; }
 
-            if (! Enum.TryParse<Reports>(fields[1].Trim(), true, out report)){ return false; }
+            if (!Enum.TryParse<Reports>(fields[1].Trim(), true, out report)) { return false; }
 
-            if (! int.TryParse(fields[2].Trim(), out priority)&&
+            if (!int.TryParse(fields[2].Trim(), out priority) &&
                 priority < 1 || priority > 5) { return false; }
 
-            if (! double.TryParse(fields[3].Trim(), out score) ||
-                (score > 100.0 || score <0.0)) { return false; }
+            if (!double.TryParse(fields[3].Trim(), out score) ||
+                (score > 100.0 || score < 0.0)) { return false; }
 
-            if (! Enum.TryParse<Statuses>(fields[4].Trim(), true, out status)) { return false; }
+            if (!Enum.TryParse<Statuses>(fields[4].Trim(), true, out status)) { return false; }
 
             else { return true; }
 
@@ -187,7 +187,7 @@ namespace Analyzer
             }
             double average = total / len;
             return average;
-            
+
         }
 
         static double FindMaxScore(double[] scores, int len)
@@ -215,7 +215,40 @@ namespace Analyzer
             }
             return counter;
         }
+   
+        static int CountByType(Reports[] reports, int len, Reports selectedReport)
+        {
+            int counter = 0;
+            foreach (Reports currReport in reports)
+            {
+                if (currReport == selectedReport)
+                {
+                    counter++;
+                }
+            }
+            return counter;
+        }
+        static void DidplayStatusCounts(Statuses[] statuses, int len)
+        {
+            int countPending = CountByStatus(statuses, len, Statuses.Pending);
+            int countApproved = CountByStatus(statuses, len, Statuses.Approved);
+            int coiuntRejected = CountByStatus(statuses, len, Statuses.Rejected);
+            Console.WriteLine($"Pending: {countPending}\n");
+            Console.WriteLine($"Approved: {countApproved}\n");
+            Console.WriteLine($"Rejected: {coiuntRejected}\n");
+        }
 
+        static void DisplayTypeCount(Reports[] reports, int len)
+        {
+            int countCollect = CountByType(reports, len, Reports.Collect);
+            int countAnalyze = CountByType(reports, len, Reports.Analyze);
+            int countRecon = CountByType(reports, len, Reports.Recon);
+            int countIntel = CountByType(reports, len, Reports.Intel);
+            Console.WriteLine($"Collect: {countCollect}\n");
+            Console.WriteLine($"Analyze: {countAnalyze}\n");
+            Console.WriteLine($"Recon: {countRecon}\n");
+            Console.WriteLine($"Intel: {countIntel}\n");
+        }
     }
 }
 
