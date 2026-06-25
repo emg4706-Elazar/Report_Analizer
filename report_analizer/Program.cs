@@ -1,8 +1,5 @@
 ﻿using System.IO;
 using System;
-using System.Xml.Schema;
-using System.Formats.Asn1;
-
 
 
 namespace Analyzer
@@ -59,11 +56,11 @@ namespace Analyzer
 
                 DisplayBasicStatistics(scores, countValidLines);
 
-                DidplayStatusCounts(statuses, countValidLines);
+                DisplayStatusCounts(statuses, countValidLines);
 
                 DisplayTypeCount(reports, countValidLines);
 
-                DisplayHighestPriorityApprovode(
+                DisplayHighestPriorityApproved(
                     units,
                     reports,
                     priorities,
@@ -151,15 +148,15 @@ namespace Analyzer
 
             if (!Enum.TryParse<Reports>(fields[1].Trim(), true, out report)) { return false; }
 
-            if (!int.TryParse(fields[2].Trim(), out priority) &&
-                priority < 1 || priority > 5) { return false; }
+            if (!int.TryParse(fields[2].Trim(), out priority)) { return false; }
+            if (priority < 1 || priority > 5) { return false; }
 
-            if (!double.TryParse(fields[3].Trim(), out score) ||
-                (score > 100.0 || score < 0.0)) { return false; }
+            if (!double.TryParse(fields[3].Trim(), out score)) { return false; }
+            if (score > 100.0 || score < 0.0) { return false; }
 
             if (!Enum.TryParse<Statuses>(fields[4].Trim(), true, out status)) { return false; }
 
-            else { return true; }
+            return true;
 
 
         }
@@ -172,23 +169,25 @@ namespace Analyzer
         static double CalculateAverage(double[] scores, int len)
         {
             double total = 0;
-            foreach (double score in scores)
+            for (int i = 0; i < len; i++)
             {
-                total += score;
+                double currScore = scores[i];
+                total += currScore;
             }
             double average = total / len;
-            return average;
+            return Math.Round(average, 2);
 
         }
 
         static double FindMaxScore(double[] scores, int len)
         {
             double maxi = scores[0];
-            foreach (double score in scores)
+            for (int i = 1; i < len; i++)
             {
-                if (maxi < score)
+                double currScore = scores[i];
+                if (maxi < currScore)
                 {
-                    maxi = score;
+                    maxi = currScore;
                 }
             }
             return maxi;
@@ -197,11 +196,12 @@ namespace Analyzer
         static double FindMinScore(double[] scores, int len)
         {
             double mini = scores[0];
-            foreach (double score in scores)
+            for (int i = 1; i < len; i++)
             {
-                if (mini > score)
+                double currScore = scores[i];
+                if (mini > currScore)
                 {
-                    mini = score;
+                    mini = currScore;
                 }
             }
             return mini;
@@ -213,7 +213,7 @@ namespace Analyzer
             double highScore = FindMaxScore(scores, validReports);
             double lowScore = FindMinScore(scores, validReports);
 
-            Console.WriteLine("\n=== Report Statstics ===\n");
+            Console.WriteLine("\n=== Report Statistics ===\n");
             Console.WriteLine($"Total Reports: {total}");
             Console.WriteLine($"Average Score: {average}");
             Console.WriteLine($"Highest Score: {highScore}");
@@ -223,8 +223,9 @@ namespace Analyzer
         static int CountByStatus(Statuses[] statuses, int len, Statuses selectedStatus)
         {
             int counter = 0;
-            foreach (Statuses currStatus in statuses)
+            for (int i = 0; i < len; i++)
             {
+                Statuses currStatus = statuses[i];
                 if (currStatus == selectedStatus)
                 {
                     counter++;
@@ -236,8 +237,9 @@ namespace Analyzer
         static int CountByType(Reports[] reports, int len, Reports selectedReport)
         {
             int counter = 0;
-            foreach (Reports currReport in reports)
+            for (int i = 0; i < len; i++)
             {
+                Reports currReport = reports[i];
                 if (currReport == selectedReport)
                 {
                     counter++;
@@ -246,15 +248,15 @@ namespace Analyzer
             return counter;
         }
 
-        static void DidplayStatusCounts(Statuses[] statuses, int len)
+        static void DisplayStatusCounts(Statuses[] statuses, int len)
         {
             int countPending = CountByStatus(statuses, len, Statuses.Pending);
             int countApproved = CountByStatus(statuses, len, Statuses.Approved);
-            int coiuntRejected = CountByStatus(statuses, len, Statuses.Rejected);
+            int countRejected = CountByStatus(statuses, len, Statuses.Rejected);
             Console.WriteLine("\n=== Report By Status ===\n");
             Console.WriteLine($"Pending: {countPending}");
             Console.WriteLine($"Approved: {countApproved}");
-            Console.WriteLine($"Rejected: {coiuntRejected}\n");
+            Console.WriteLine($"Rejected: {countRejected}\n");
         }
 
         static void DisplayTypeCount(Reports[] reports, int len)
@@ -269,7 +271,7 @@ namespace Analyzer
             Console.WriteLine($"Recon: {countRecon}");
             Console.WriteLine($"Intel: {countIntel}\n");
         }
-        static void DisplayHighestPriorityApprovode(
+        static void DisplayHighestPriorityApproved(
             string[] units,
             Reports[] reports,
             int[] priorities,
@@ -313,13 +315,13 @@ namespace Analyzer
         {
             double[] totals = new double[6];
             int[] counts = new int[6];
-            int currrPriority;
+            int currrentPriority;
 
-            for (int i = 1; i <= 5; i++)
+            for (int i = 0; i < len; i++)
             {
-                currrPriority = priorities[i];
-                totals[currrPriority] = scores[i];
-                counts[currrPriority]++;
+                currrentPriority = priorities[i];
+                totals[currrentPriority] += scores[i];
+                counts[currrentPriority]++;
             }
 
             Console.WriteLine("\n=== Average Score By Priority ===\n");
@@ -328,7 +330,8 @@ namespace Analyzer
                 if (counts[i] != 0)
                 {
                     double average = totals[i] / counts[i];
-                    Console.WriteLine($"Priority {i}: {average}");
+                    double roundedAverage = Math.Round(average, 2);
+                    Console.WriteLine($"Priority {i}: {roundedAverage}");
                 }
                 else
                 {
