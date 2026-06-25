@@ -1,12 +1,14 @@
 ﻿using System.IO;
 using System;
+using System.Xml.Schema;
+using System.Formats.Asn1;
+
 
 
 namespace Analyzer
 {
     class ReportAnalyzer
     {
-        static string filepath = "reports.txt";
         enum Reports
         {
             Collect,
@@ -20,69 +22,157 @@ namespace Analyzer
             Approved,
             Rejected
         }
-        const int MAX_LINES = 0;
+
+        static string filepath = "reports.txt";
+        const int MAX_LINES = 100;
 
         static void Main()
         {
             string[] units = new string[MAX_LINES];
-            string[] reports = new string[MAX_LINES];
+            Reports[] reports = new Reports[MAX_LINES];
             int[] priorities = new int[MAX_LINES];
-            int[] scores = new int[MAX_LINES];
-            string[] statuses = new string[MAX_LINES];
+            double[] scores = new double[MAX_LINES];
+            Statuses[] statuses = new Statuses[MAX_LINES];
 
-
-            if (!IsExists(filepath))
+            string[]? fileAsArray = LoadFile(filepath);
+            if (fileAsArray is null)
             {
                 Console.WriteLine($"Error: File '{filepath}' not found.");
             }
+            else if (fileAsArray.Length == 0)
+            {
+                Console.WriteLine("Error: File is empty");
+            }
             else
             {
-                string[]? fileAsArray = LoadFile(filepath);
-                if (fileAsArray.Length == 0)
-                {
-                    Console.WriteLine("Error: File is empty");
-                }
-                else
-                {
-                    Console.WriteLine($"File loaded: {fileAsArray.Length} lines found");
-                }
+                Console.WriteLine($"File loaded: {fileAsArray.Length} lines found");
+
+                int countFixedLines = ProcessReports(
+                    fileAsArray,
+                    units,
+                    reports,
+                    priorities,
+                    scores,
+                    statuses);
+
+
+                Console.WriteLine($"'{countFixedLines}' correct reports found in file.");
+                DisplayLines(
+                    countFixedLines,
+                    units,
+                    reports,
+                    priorities,
+                    scores,
+                    statuses);
             }
-
-
-
-
-
-
-
         }
-        
-        static bool IsExists(string path)
+
+
+        static string[]? LoadFile(string path)
         {
             bool existed = File.Exists(path);
-            return existed;
+            if (!existed) { return null;}
+
+            else
+            {
+                string[] fileAsArray = File.ReadAllLines(path);
+                return fileAsArray;
+            }
+        }
+   static int ProcessReports(
+            string[] fileAsArray,
+            string[] units,
+            Reports[] reports,
+            int[] priorities,
+            double[] scores,
+            Statuses[] statuses)
+        {
+            int currIndex = 0;
+            foreach (string line in fileAsArray)
+            {
+                 bool isValid = ProcessLine(
+                    line,
+                    out string unit,
+                    out Reports report,
+                    out int priority,
+                    out double score,
+                    out Statuses status);
+
+                if (isValid)
+                {
+                    units[currIndex] = unit;
+                    reports[currIndex] = report;
+                    priorities[currIndex] = priority;
+                    scores[currIndex] = score;
+                    statuses[currIndex] = status;
+
+                    currIndex++;
+                }
+            }
+            int countFixedLines = currIndex;
+            return countFixedLines;
+
         }
 
-        static string[] LoadFile(string path)
+        static bool ProcessLine(
+            string line,
+            out string unit,
+            out Reports report,
+            out int priority,
+            out double score,
+            out Statuses status)
+
         {
-            string[] fileAsArray = File.ReadAllLines(filepath);
-            return fileAsArray;
+            unit = "";
+            report = default;
+            priority = 0;
+            score = 0.0;
+            status = default;
+
+
+            string[] fields = line.Split(",");
+
+            if (fields.Length != 5) { return false; }
+
+            unit = fields[0].Trim();
+            if (! HasAny(unit)){ return false; }
+
+            if (! Enum.TryParse<Reports>(fields[1].Trim(), true, out report)){ return false; }
+
+            if (! int.TryParse(fields[2].Trim(), out priority)&&
+                priority < 1 || priority > 5) { return false; }
+
+            if (! double.TryParse(fields[3].Trim(), out score) ||
+                (score > 100.0 || score <0.0)) { return false; }
+
+            if (! Enum.TryParse<Statuses>(fields[4].Trim(), true, out status)) { return false; }
+
+            else { return true; }
+
+
         }
 
-        static int ProcessReports(
-            string[] fileAsArray, 
-            ref string[] units,
-            ref string[] reports,
-            ref int[] priorities,
-            ref int[] scores,
-            ref string[] statuses
-            )
+        static bool HasAny(string unit)
         {
-
+            return unit.Length != 0;
         }
 
-        static string ProcessLine(string line)
+        static void DisplayLines(
+            int len,
+            string[] units,
+            Reports[] reports,
+            int[] priorities,
+            double[] scores,
+            Statuses[] statuses)
         {
 
+            int currIndex = 0;
+            for (int i = 0; i < len; i++)
+            {
+                Console.WriteLine($"{units[currIndex]}, {reports[currIndex]}, {priorities[currIndex]}, {scores[currIndex]}, {statuses[currIndex]}");
+                currIndex++;
+            }
         }
     }
 }
+
