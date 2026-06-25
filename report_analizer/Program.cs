@@ -55,6 +55,8 @@ namespace Analyzer
                     scores,
                     statuses);
 
+                Console.WriteLine($"Stored {countValidLines} valid records for analysis.");
+
                 DisplayHighestPriorityApprovode(
                     units,
                     reports,
@@ -162,23 +164,6 @@ namespace Analyzer
             return unit.Length != 0;
         }
 
-        static void DisplayLines(
-            int len,
-            string[] units,
-            Reports[] reports,
-            int[] priorities,
-            double[] scores,
-            Statuses[] statuses)
-        {
-
-            int currIndex = 0;
-            for (int i = 0; i < len; i++)
-            {
-                Console.WriteLine($"{units[currIndex]}, {reports[currIndex]}, {priorities[currIndex]}, {scores[currIndex]}, {statuses[currIndex]}");
-                currIndex++;
-            }
-        }
-
         static double CalculateAverage(double[] scores, int len)
         {
             double total = 0;
@@ -216,7 +201,7 @@ namespace Analyzer
             }
             return counter;
         }
-   
+
         static int CountByType(Reports[] reports, int len, Reports selectedReport)
         {
             int counter = 0;
@@ -229,6 +214,12 @@ namespace Analyzer
             }
             return counter;
         }
+
+        //static void DisplayBasicStatistics(double[] scores, int len)
+        //    {
+
+        //    }
+
         static void DidplayStatusCounts(Statuses[] statuses, int len)
         {
             int countPending = CountByStatus(statuses, len, Statuses.Pending);
@@ -245,9 +236,10 @@ namespace Analyzer
             int countAnalyze = CountByType(reports, len, Reports.Analyze);
             int countRecon = CountByType(reports, len, Reports.Recon);
             int countIntel = CountByType(reports, len, Reports.Intel);
-            Console.WriteLine($"Collect: {countCollect}\n");
-            Console.WriteLine($"Analyze: {countAnalyze}\n");
-            Console.WriteLine($"Recon: {countRecon}\n");
+            Console.WriteLine("\n=== Reports By Type ===\n");
+            Console.WriteLine($"Collect: {countCollect}");
+            Console.WriteLine($"Analyze: {countAnalyze}");
+            Console.WriteLine($"Recon: {countRecon}");
             Console.WriteLine($"Intel: {countIntel}\n");
         }
         static void DisplayHighestPriorityApprovode(
@@ -288,6 +280,34 @@ namespace Analyzer
                 }
             }
             return maxPriority;
+        }
+
+        static void DisplayAverageByPriority(int[] priorities, double[] scores, int len)
+        {
+            double[] totals = new double[5];
+            int[] counts = new int[5];
+            int currrPriority;
+
+            for (int i = 0; i < len; i++)
+            {
+                currrPriority = priorities[i];
+                totals[currrPriority] = scores[i];
+                counts[currrPriority]++;
+            }
+
+            Console.WriteLine("\n=== Average Score By Priority ===\n");
+            for (int i = 0; i <= 5; i++)
+            {            
+                if (totals[i] != 0)
+                {
+                    double average = totals[0] / counts[i];
+                    Console.WriteLine($"Priority {i}: {average}");
+                }
+                else
+                {
+                    Console.WriteLine($"Priority {i}: no report");
+                }
+            }
         }
 
     }
