@@ -47,7 +47,7 @@ namespace Analyzer
             {
                 Console.WriteLine($"File loaded: {fileAsArray.Length} lines found");
 
-                int countFixedLines = ProcessReports(
+                int countValidLines = ProcessReports(
                     fileAsArray,
                     units,
                     reports,
@@ -56,14 +56,13 @@ namespace Analyzer
                     statuses);
 
 
-                Console.WriteLine($"'{countFixedLines}' correct reports found in file.");
-                DisplayLines(
-                    countFixedLines,
-                    units,
-                    reports,
-                    priorities,
-                    scores,
-                    statuses);
+                //DisplayLines(
+                //    countValidLines,
+                //    units,
+                //    reports,
+                //    priorities,
+                //    scores,
+                //    statuses);
             }
         }
 
@@ -109,8 +108,13 @@ namespace Analyzer
                     currIndex++;
                 }
             }
-            int countFixedLines = currIndex;
-            return countFixedLines;
+            int countValidLines = currIndex;
+            int countInvalidLines = fileAsArray.Length - countValidLines;
+            Console.WriteLine("Processing complete.");
+            Console.WriteLine($"Valid lines: {countValidLines}");
+            Console.WriteLine($"Invalid lines: {countInvalidLines}");
+
+            return countValidLines;
 
         }
 
@@ -172,6 +176,18 @@ namespace Analyzer
                 Console.WriteLine($"{units[currIndex]}, {reports[currIndex]}, {priorities[currIndex]}, {scores[currIndex]}, {statuses[currIndex]}");
                 currIndex++;
             }
+        }
+
+        static double CalculateAverage(double[] scores, int len)
+        {
+            double total = 0;
+            foreach (double score in scores)
+            {
+                total += score;
+            }
+            double average = total / len;
+            return average;
+            
         }
     }
 }
