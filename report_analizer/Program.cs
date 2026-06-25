@@ -189,6 +189,33 @@ namespace Analyzer
             return average;
             
         }
+
+        static double FindMaxScore(double[] scores, int len)
+        {
+            double maxi = scores[0];
+            foreach (double score in scores)
+            {
+                if (maxi < score)
+                {
+                    maxi = score;
+                }
+            }
+            return maxi;
+        }
+
+        static int CountByStatus(Statuses[] statuses, int len, Statuses selectedStatus)
+        {
+            int counter = 0;
+            foreach (Statuses currStatus in statuses)
+            {
+                if (currStatus == selectedStatus)
+                {
+                    counter++;
+                }
+            }
+            return counter;
+        }
+
     }
 }
 
