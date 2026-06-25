@@ -45,7 +45,7 @@ namespace Analyzer
             }
             else
             {
-                Console.WriteLine($"File loaded: {fileAsArray.Length} lines found");
+                Console.WriteLine($"File loaded: {fileAsArray.Length} lines found\n");
 
                 int countValidLines = ProcessReports(
                     fileAsArray,
@@ -55,14 +55,15 @@ namespace Analyzer
                     scores,
                     statuses);
 
+                DisplayHighestPriorityApprovode(
+                    units,
+                    reports,
+                    priorities,
+                    scores,
+                    statuses,
+                    countValidLines);
 
-                //DisplayLines(
-                //    countValidLines,
-                //    units,
-                //    reports,
-                //    priorities,
-                //    scores,
-                //    statuses);
+
             }
         }
 
@@ -110,9 +111,9 @@ namespace Analyzer
             }
             int countValidLines = currIndex;
             int countInvalidLines = fileAsArray.Length - countValidLines;
-            Console.WriteLine("Processing complete.");
-            Console.WriteLine($"Valid lines: {countValidLines}");
-            Console.WriteLine($"Invalid lines: {countInvalidLines}");
+            Console.WriteLine("Processing complete.\n");
+            Console.WriteLine($"Valid lines: {countValidLines}\n");
+            Console.WriteLine($"Invalid lines: {countInvalidLines}\n");
 
             return countValidLines;
 
@@ -249,6 +250,46 @@ namespace Analyzer
             Console.WriteLine($"Recon: {countRecon}\n");
             Console.WriteLine($"Intel: {countIntel}\n");
         }
+        static void DisplayHighestPriorityApprovode(
+            string[] units,
+            Reports[] reports,
+            int[] priorities,
+            double[] scores,
+            Statuses[] statuses,
+            int len)
+        {
+            int maxPriority = GetMaxPriority(priorities, statuses, len);
+            for (int i =  0; i < len; i++)
+            {
+                if (priorities[i] == maxPriority &&
+                    statuses[i] == Statuses.Approved)
+                {
+                    Console.WriteLine("\n=== Highest Priority Approved Report ===\n");
+                    Console.WriteLine($"Unit: {units[i]}");
+                    Console.WriteLine($"Type: {reports[i]}");
+                    Console.WriteLine($"Priority: {maxPriority}");
+                    Console.WriteLine($"Score: {scores[i]}\n");
+                    break;
+                }
+            }
+        }
+
+        static int GetMaxPriority(int[] priorities, Statuses[] statuses, int len)
+        {
+            int maxPriority = 1;
+            for (int i = 0; i < len; i++)
+            {
+                if (statuses[i] == Statuses.Approved)
+                {
+                    if (maxPriority < priorities[i])
+                    {
+                        maxPriority = priorities[i];
+                    }
+                }
+            }
+            return maxPriority;
+        }
+
     }
 }
 
