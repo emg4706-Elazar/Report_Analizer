@@ -104,6 +104,11 @@ namespace Analyzer
 
                 if (isValid)
                 {
+                    if (currIndex >= MAX_LINES)
+                    {
+                        Console.WriteLine("warning: Maximum number of reports reached.");
+                        break;
+                    }
                     units[currIndex] = unit;
                     reports[currIndex] = report;
                     priorities[currIndex] = priority;
@@ -141,25 +146,34 @@ namespace Analyzer
 
             string[] fields = line.Split(",");
 
+            //Check 'line'. Whether has only 5 fields.
             if (fields.Length != 5) { return false; }
 
+            // Check 'unit'. Whether has any value.
             unit = fields[0].Trim();
             if (!HasAny(unit)) { return false; }
 
+            // Check 'report'. Whether the report is one of the 'Reports'.
             if (!Enum.TryParse<Reports>(fields[1].Trim(), true, out report)) { return false; }
 
+            // Check 'priority'
+            // 1. whether is a digit.
             if (!int.TryParse(fields[2].Trim(), out priority)) { return false; }
+            // 2. Between 1 and 5.
             if (priority < 1 || priority > 5) { return false; }
 
+            // Check 'score'
+            // 1. whether is a double
             if (!double.TryParse(fields[3].Trim(), out score)) { return false; }
+            // 2. Between 0.0 and 100.0.
             if (score > 100.0 || score < 0.0) { return false; }
 
+            // Check 'status'. Whether the report is one of the 'Statuses'.
             if (!Enum.TryParse<Statuses>(fields[4].Trim(), true, out status)) { return false; }
 
             return true;
-
-
         }
+
 
         static bool HasAny(string unit)
         {
@@ -339,7 +353,8 @@ namespace Analyzer
                 }
             }
         }
-
+ 
     }
+
 }
 
