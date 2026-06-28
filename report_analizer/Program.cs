@@ -51,6 +51,11 @@ namespace Analyzer
                     priorities,
                     scores,
                     statuses);
+                if (countValidLines == 0)
+                {
+                    Console.WriteLine("No valid reports to analyze.");
+                    return;
+                }
 
                 Console.WriteLine($"Stored {countValidLines} valid records for analysis.");
 
@@ -92,6 +97,7 @@ namespace Analyzer
                  Statuses[] statuses)
         {
             int currIndex = 0;
+            int countInvalidLines = 0;
             foreach (string line in fileAsArray)
             {
                 bool isValid = ProcessLine(
@@ -117,9 +123,12 @@ namespace Analyzer
 
                     currIndex++;
                 }
+                else
+                {
+                    countInvalidLines++;
+                }
             }
             int countValidLines = currIndex;
-            int countInvalidLines = fileAsArray.Length - countValidLines;
             Console.WriteLine("Processing complete.\n");
             Console.WriteLine($"Valid lines: {countValidLines}\n");
             Console.WriteLine($"Invalid lines: {countInvalidLines}\n");
@@ -157,7 +166,7 @@ namespace Analyzer
             if (!Enum.TryParse<Reports>(fields[1].Trim(), true, out report)) { return false; }
 
             // Check 'priority'
-            // 1. whether is a digit.
+            // 1. whether is a int.
             if (!int.TryParse(fields[2].Trim(), out priority)) { return false; }
             // 2. Between 1 and 5.
             if (priority < 1 || priority > 5) { return false; }
@@ -189,7 +198,7 @@ namespace Analyzer
                 total += currScore;
             }
             double average = total / len;
-            return Math.Round(average, 2);
+            return average;
 
         }
 
@@ -229,9 +238,9 @@ namespace Analyzer
 
             Console.WriteLine("\n=== Report Statistics ===\n");
             Console.WriteLine($"Total Reports: {total}");
-            Console.WriteLine($"Average Score: {average}");
-            Console.WriteLine($"Highest Score: {highScore}");
-            Console.WriteLine($"Lowest Score: {lowScore}");
+            Console.WriteLine($"Average Score: {average:F2}");
+            Console.WriteLine($"Highest Score: {highScore:F2}");
+            Console.WriteLine($"Lowest Score: {lowScore:F2}");
         }
 
         static int CountByStatus(Statuses[] statuses, int len, Statuses selectedStatus)
@@ -303,7 +312,7 @@ namespace Analyzer
                     Console.WriteLine($"Unit: {units[i]}");
                     Console.WriteLine($"Type: {reports[i]}");
                     Console.WriteLine($"Priority: {maxPriority}");
-                    Console.WriteLine($"Score: {scores[i]}\n");
+                    Console.WriteLine($"Score: {scores[i]:F2}\n");
                     break;
                 }
             }
@@ -344,8 +353,7 @@ namespace Analyzer
                 if (counts[i] != 0)
                 {
                     double average = totals[i] / counts[i];
-                    double roundedAverage = Math.Round(average, 2);
-                    Console.WriteLine($"Priority {i}: {roundedAverage}");
+                    Console.WriteLine($"Priority {i}: {average:F2}");
                 }
                 else
                 {
